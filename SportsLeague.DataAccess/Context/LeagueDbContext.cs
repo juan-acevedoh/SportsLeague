@@ -14,7 +14,9 @@ public class LeagueDbContext : DbContext
     public DbSet<Player> Players => Set<Player>();
     public DbSet<Referee> Referees => Set<Referee>();              
     public DbSet<Tournament> Tournaments => Set<Tournament>();    
-    public DbSet<TournamentTeam> TournamentTeams => Set<TournamentTeam>(); 
+    public DbSet<TournamentTeam> TournamentTeams => Set<TournamentTeam>();
+    public DbSet<Sponsor> Sponsors => Set<Sponsor>();
+    public DbSet<TournamentSponsor> TournamentSponsors => Set<TournamentSponsor>();
 
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -142,6 +144,34 @@ public class LeagueDbContext : DbContext
             // Índice único compuesto: un equipo solo una vez por torneo
             entity.HasIndex(tt => new { tt.TournamentId, tt.TeamId })
                   .IsUnique();
+        });
+        modelBuilder.Entity<Sponsor>(entity =>
+        {
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.Name)
+                  .IsRequired()
+                  .HasMaxLength(150);
+            entity.HasIndex(x => x.Name)
+                  .IsUnique();
+        });
+
+        modelBuilder.Entity<TournamentSponsor>(entity =>
+        {
+            entity.HasKey(x => x.Id);
+
+            entity.Property(x => x.ContractAmount)
+                  .HasPrecision(18, 2);
+
+            entity.HasIndex(x => new { x.TournamentId, x.SponsorId })
+                  .IsUnique();
+
+            entity.HasOne(ts => ts.Tournament)
+                  .WithMany(t => t.TournamentSponsors)
+                  .HasForeignKey(ts => ts.TournamentId);
+
+            entity.HasOne(ts => ts.Sponsor)
+                  .WithMany(s => s.TournamentSponsors)
+                  .HasForeignKey(ts => ts.SponsorId);
         });
 
     }
