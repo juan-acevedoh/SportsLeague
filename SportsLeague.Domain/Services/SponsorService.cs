@@ -2,6 +2,7 @@
 using SportsLeague.Domain.Entities;
 using SportsLeague.Domain.Interfaces.Repositories;
 using SportsLeague.Domain.Interfaces.Services;
+using System.Net.Mail;
 
 namespace SportsLeague.Domain.Services
 {
@@ -23,7 +24,18 @@ namespace SportsLeague.Domain.Services
             _tournamentSponsorRepository = tournamentSponsorRepository;
 
         }
-
+        private bool IsValidEmail(string email)
+        {
+            try
+            {
+                MailAddress addr = new System.Net.Mail.MailAddress(email);
+                return addr.Address == email;
+            }
+            catch
+            {
+                return false;
+            }
+        }
         public async Task<IEnumerable<Sponsor>> GetAllAsync()
         {
             return await _sponsorRepository.GetAllAsync();
@@ -40,6 +52,10 @@ namespace SportsLeague.Domain.Services
             if (existing != null)
                 throw new InvalidOperationException($"Ya existe un sponsor con el nombre {sponsor.Name}");
 
+            if (!IsValidEmail(sponsor.ContactEmail))
+                throw new InvalidOperationException("El correo electrónico no tiene un formato válido.");
+
+
             return await _sponsorRepository.CreateAsync(sponsor);
         }
 
@@ -48,6 +64,10 @@ namespace SportsLeague.Domain.Services
             Sponsor? existing = await _sponsorRepository.GetByIdAsync(id);
             if (existing == null)
                 throw new KeyNotFoundException($"No se encontró el sponsor con ID {id}");
+
+            if (!IsValidEmail(sponsor.ContactEmail))
+                throw new InvalidOperationException("El correo electrónico no tiene un formato válido.");
+
 
             existing.Name = sponsor.Name;
             existing.ContactEmail = sponsor.ContactEmail;
@@ -69,6 +89,10 @@ namespace SportsLeague.Domain.Services
         //Relation with Tournament 
         public async Task<TournamentSponsor> RegisterSponsorAsync(int tournamentId, int sponsorId, decimal contractAmount)
         {
+            //ContractAmount > 0
+            if (contractAmount <= 0)
+                throw new InvalidOperationException("El monto del contrato debe ser mayor a 0.");
+
             Tournament tournament = await _tournamentRepository.GetByIdAsync(tournamentId)
                 ?? throw new KeyNotFoundException("Torneo no encontrado");
 

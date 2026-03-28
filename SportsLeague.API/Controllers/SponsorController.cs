@@ -31,22 +31,23 @@ namespace SportsLeague.API.Controllers
         public async Task<ActionResult<SponsorResponseDTO>> GetById(int id)
         {
             Sponsor? sponsor = await _sponsorService.GetByIdAsync(id);
-            if (sponsor == null) return NotFound();
+            if (sponsor == null)
+                return NotFound();
 
             return Ok(_mapper.Map<SponsorResponseDTO>(sponsor));
         }
 
         [HttpPost]
-        public async Task<ActionResult> Create(SponsorRequestDTO dto)
+        public async Task<ActionResult<SponsorResponseDTO>> Create(SponsorRequestDTO dto)
         {
             try
             {
                 Sponsor entity = _mapper.Map<Sponsor>(dto);
-                Sponsor? created = await _sponsorService.CreateAsync(entity);
+                Sponsor created = await _sponsorService.CreateAsync(entity);
 
-                SponsorResponseDTO result = _mapper.Map<SponsorResponseDTO>(created);
+                SponsorResponseDTO response = _mapper.Map<SponsorResponseDTO>(created);
 
-                return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
+                return CreatedAtAction(nameof(GetById), new { id = response.Id }, response);
             }
             catch (InvalidOperationException ex)
             {
@@ -54,23 +55,82 @@ namespace SportsLeague.API.Controllers
             }
         }
 
-        // Add new Tournament
-        [HttpPost("{tournamentId}/sponsors")]
-        public async Task<ActionResult> RegisterSponsor(int tournamentId, TournamentSponsorRequestDTO dto)
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update(int id, SponsorRequestDTO dto)
         {
             try
             {
-                TournamentSponsor result = await _sponsorService.RegisterSponsorAsync(
-                    tournamentId,
-                    dto.SponsorId,
-                    dto.ContractAmount
-                );
-
-                return Ok(result);
+                Sponsor entity = _mapper.Map<Sponsor>(dto);
+                await _sponsorService.UpdateAsync(id, entity);
+                return NoContent();
             }
-            catch (Exception ex)
+            catch (KeyNotFoundException)
             {
-                return BadRequest(new { message = ex.Message });
+                return NotFound();
+            }
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(int id)
+        {
+            try
+            {
+                await _sponsorService.DeleteAsync(id);
+                return NoContent();
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound();
+            }
+        }
+
+        [HttpGet("{id}/tournaments")]
+        public async Task<ActionResult<IEnumerable<TournamentSponsorResponseDTO>>> GetTournaments(int id)
+        {
+            IEnumerable<TournamentSponsor> sponsors = await _sponsorService.GetSponsorsByTournamentAsync(id);
+
+            IEnumerable<TournamentSponsorResponseDTO> response = sponsors.Select(ts => new TournamentSponsorResponseDTO
+            {
+                Id = ts.Id,
+                SponsorId = ts.SponsorId,
+                SponsorName = ts.Sponsor.Name,
+                ContractAmount = ts.ContractAmount,
+                CreatedAt = ts.CreatedAt
+            });
+
+            return Ok(response);
+        }
+
+        [HttpPost("{id}/tournaments")]
+        public async Task<IActionResult> RegisterSponsor(int id, TournamentSponsorRequestDTO dto)
+        {
+            try
+            {
+                TournamentSponsor result = await _sponsorService.RegisterSponsorAsync(id, dto.SponsorId, dto.ContractAmount);
+                return StatusCode(201, result);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Conflict(new { message = ex.Message });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+        }
+
+        // Delete
+        [HttpDelete("{id}/tournaments/{tid}")]
+        public async Task<IActionResult> RemoveTournament(int id, int tid)
+        {
+            try
+            {
+                await _sponsorService.RemoveSponsorAsync(id, tid);
+                return NoContent();
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound();
             }
         }
     }
