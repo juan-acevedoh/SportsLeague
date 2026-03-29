@@ -144,6 +144,7 @@ public class LeagueDbContext : DbContext
             // Índice único compuesto: un equipo solo una vez por torneo
             entity.HasIndex(tt => new { tt.TournamentId, tt.TeamId })
                   .IsUnique();
+            //Sponsor
         });
         modelBuilder.Entity<Sponsor>(entity =>
         {
@@ -153,8 +154,14 @@ public class LeagueDbContext : DbContext
                   .HasMaxLength(150);
             entity.HasIndex(x => x.Name)
                   .IsUnique();
+            entity.Property(x => x.ContactEmail)
+                  .IsRequired();
+            entity.Property(x => x.Category)
+                  .IsRequired();
+            entity.Property(x => x.CreatedAt)
+                  .IsRequired();
         });
-
+        //Configuracion de Tournamentsponsor
         modelBuilder.Entity<TournamentSponsor>(entity =>
         {
             entity.HasKey(x => x.Id);

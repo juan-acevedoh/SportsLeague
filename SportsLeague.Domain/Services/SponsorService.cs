@@ -110,7 +110,7 @@ namespace SportsLeague.Domain.Services
                 ContractAmount = contractAmount
             };
 
-            return await _tournamentSponsorRepository.CreateAsync(ts);
+            return await _tournamentSponsorRepository.CreateWithIncludesAsync(ts);
         }
 
         public async Task<IEnumerable<TournamentSponsor>> GetSponsorsByTournamentAsync(int tournamentId)

@@ -30,7 +30,7 @@ namespace SportsLeague.Domain.Services
         public async Task<Referee?> GetByIdAsync(int id)
         {
             _logger.LogInformation("Retrieving referee with ID: {RefereeId}", id);
-            var referee = await _refereeRepository.GetByIdAsync(id);
+            Referee? referee = await _refereeRepository.GetByIdAsync(id);
             if (referee == null)
                 _logger.LogWarning("Referee with ID {RefereeId} not found", id);
             return referee;
@@ -46,7 +46,7 @@ namespace SportsLeague.Domain.Services
 
         public async Task UpdateAsync(int id, Referee referee)
         {
-            var existing = await _refereeRepository.GetByIdAsync(id);
+            Referee? existing = await _refereeRepository.GetByIdAsync(id);
             if (existing == null)
                 throw new KeyNotFoundException($"No se encontró el árbitro con ID {id}");
 

@@ -87,18 +87,15 @@ namespace SportsLeague.API.Controllers
         [HttpGet("{id}/tournaments")]
         public async Task<ActionResult<IEnumerable<TournamentSponsorResponseDTO>>> GetTournaments(int id)
         {
-            IEnumerable<TournamentSponsor> sponsors = await _sponsorService.GetSponsorsByTournamentAsync(id);
-
-            IEnumerable<TournamentSponsorResponseDTO> response = sponsors.Select(ts => new TournamentSponsorResponseDTO
+            try
             {
-                Id = ts.Id,
-                SponsorId = ts.SponsorId,
-                SponsorName = ts.Sponsor.Name,
-                ContractAmount = ts.ContractAmount,
-                CreatedAt = ts.CreatedAt
-            });
-
-            return Ok(response);
+                var links = await _sponsorService.GetSponsorsByTournamentAsync(id);
+                return Ok(_mapper.Map<IEnumerable<TournamentSponsorResponseDTO>>(links));
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
         }
 
         [HttpPost("{id}/tournaments")]
@@ -106,8 +103,11 @@ namespace SportsLeague.API.Controllers
         {
             try
             {
-                TournamentSponsor result = await _sponsorService.RegisterSponsorAsync(id, dto.SponsorId, dto.ContractAmount);
-                return StatusCode(201, result);
+                var result = await _sponsorService.RegisterSponsorAsync(id, dto.SponsorId, dto.ContractAmount);
+
+                var response = _mapper.Map<TournamentSponsorResponseDTO>(result);
+
+                return CreatedAtAction(nameof(GetTournaments), new { id = id }, response);
             }
             catch (InvalidOperationException ex)
             {
