@@ -144,8 +144,9 @@ public class LeagueDbContext : DbContext
             // Índice único compuesto: un equipo solo una vez por torneo
             entity.HasIndex(tt => new { tt.TournamentId, tt.TeamId })
                   .IsUnique();
-            //Sponsor
+            
         });
+        //Sponsor Confiration
         modelBuilder.Entity<Sponsor>(entity =>
         {
             entity.HasKey(x => x.Id);

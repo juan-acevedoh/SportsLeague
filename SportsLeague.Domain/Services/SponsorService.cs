@@ -24,6 +24,7 @@ namespace SportsLeague.Domain.Services
             _tournamentSponsorRepository = tournamentSponsorRepository;
 
         }
+        //Validar Email
         private bool IsValidEmail(string email)
         {
             try
@@ -85,11 +86,10 @@ namespace SportsLeague.Domain.Services
 
             await _sponsorRepository.DeleteAsync(id);
         }
-
-        //Relation with Tournament 
+        //Registar un Sponsor a un torneo
         public async Task<TournamentSponsor> RegisterSponsorAsync(int tournamentId, int sponsorId, decimal contractAmount)
         {
-            //ContractAmount > 0
+            //ContractAmount > 0 de validacion
             if (contractAmount <= 0)
                 throw new InvalidOperationException("El monto del contrato debe ser mayor a 0.");
 
@@ -112,12 +112,12 @@ namespace SportsLeague.Domain.Services
 
             return await _tournamentSponsorRepository.CreateWithIncludesAsync(ts);
         }
-
+      
         public async Task<IEnumerable<TournamentSponsor>> GetSponsorsByTournamentAsync(int tournamentId)
         {
             return await _tournamentSponsorRepository.GetSponsorsByTournamentAsync(tournamentId);
         }
-
+        //Desvincular Sponsor de torneo
         public async Task RemoveSponsorAsync(int tournamentId, int sponsorId)
         {
             TournamentSponsor link = await _tournamentSponsorRepository.GetByTournamentAndSponsorAsync(tournamentId, sponsorId)

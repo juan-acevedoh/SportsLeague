@@ -10,7 +10,7 @@
         public string SponsorName { get; set; } = string.Empty;
 
         public decimal ContractAmount { get; set; }
-
+        //Se declara el joinedAt como para la salida Correcta
         public DateTime JoinedAT { get; set; }
     }
 }
