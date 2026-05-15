@@ -69,6 +69,8 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.PlayerName,
                 opt => opt.MapFrom(src =>
                     src.Player.FirstName + " " + src.Player.LastName));
+
+        // MatchLineUp mappings
         CreateMap<MatchLineupRequest, MatchLineup>();
 
         CreateMap<MatchLineup, MatchLineupResponse>()

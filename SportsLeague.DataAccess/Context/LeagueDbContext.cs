@@ -284,6 +284,7 @@ public class LeagueDbContext : DbContext
                   .HasForeignKey(c => c.PlayerId)
                   .OnDelete(DeleteBehavior.Restrict);
         });
+        //── LineUp Configuration ──
         modelBuilder.Entity<MatchLineup>(entity =>
         {
             entity.HasKey(ml => ml.Id);
